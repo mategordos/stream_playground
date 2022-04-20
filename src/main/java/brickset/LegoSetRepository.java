@@ -3,6 +3,7 @@ package brickset;
 import repository.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -22,24 +23,64 @@ public class LegoSetRepository extends Repository<LegoSet> {
     public boolean doesLegoSetWithNameExist(String name)
     {
         return getAll().stream().
-                anyMatch(s -> s.getName().toString().contains(name));
-    }
-/*
-    public List<LegoSet> sumOfAllLegoSetPiecesWithMoreThanAThousandPieces()
-    {
-        return getAll().stream()
-                .filter(legoSet -> legoSet.getPieces() > 1000)
-                .reduce();
+                anyMatch(s -> s.getName().equals(name));
     }
 
-*/
+    /**
+     *
+     * @return the int value of the sum of all LegoSet pieces with the pieces value being over 1000
+     */
+
+    public int sumOfAllLegoSetPiecesOfSetsWithMoreThanAThousandPieces()
+    {
+        return getAll().stream()
+                .map(LegoSet::getPieces)
+                .filter(pieces -> pieces > 1000)
+                .reduce(0, Integer::sum);
+    }
+
+    /**
+     *
+     * @return the number of distinct tags
+     */
+    public long countDistinctLegoSetTags() {
+        return getAll().stream()
+                .filter(legoSet -> legoSet.getTags() !=null)
+                .flatMap(legoset -> legoset.getTags().stream())
+                .distinct()
+                .count();
+    }
+
+    /**
+     *
+     * @return a Map containing LegoSet number and brickSetURL pairs
+     */
+    public Map getLegoSetNumberAndBrickSetUrlPairs() {
+        return getAll().stream()
+                .collect(Collectors.toMap(LegoSet::getNumber, LegoSet::getBricksetURL));
+    }
+
+
+    /**
+     *
+     * @return a Map containing PackigingTypes with their corresponding count values in pairs
+     */
+    public Map<PackagingType, Long> countAppearanceOfEachPackigingType() {
+        return getAll().stream()
+                .collect(Collectors.groupingBy(LegoSet::getPackagingType,Collectors.counting()));
+    }
+
 
 
 
     public static void main(String[] args) {
         var repository = new LegoSetRepository();
         System.out.println(repository.doesLegoSetWithNameExist("Monster 4"));
- //       System.out.println(repository.sumOfAllLegoSetPiecesWithMoreThanAThousandPieces());
+        System.out.println(repository.countDistinctLegoSetTags());
+        System.out.println(repository.sumOfAllLegoSetPiecesOfSetsWithMoreThanAThousandPieces());
+        System.out.println(repository.getLegoSetNumberAndBrickSetUrlPairs());
+        System.out.println(repository.countAppearanceOfEachPackigingType());
+
     }
 
 }
